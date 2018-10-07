@@ -1,0 +1,10 @@
+describe('{{{ escape_single_quotes self_name }}}', () => {{#curly}}{{#indent}}{{#unless is_empty?}}
+beforeEach(() => {{#curly}}
+{{> body}}
+{{/curly}});
+{{/unless}}
+{{#each rendered_children.scenarios}}{{{this}}}
+
+{{/each}}
+{{/indent}}
+{{/curly}});

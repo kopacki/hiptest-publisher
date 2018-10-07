@@ -507,411 +507,97 @@ describe 'Render as Javascript' do
     ].join("\n")
   end
 
-  context 'qUnit' do
+  context 'Cypress' do
     before(:each) do
-      @grand_child_scenario_rendered_for_single_file = [
-        "(function () {",
-        "  module('One grand\\'child scenario', {",
-        "    setup: function () {",
-        "      this.actionwords = Object.create(Actionwords);",
-        "    }",
-        "  });",
-        "",
-        "  test('One grand\\'child scenario', function () {",
-        "",
-        "  });",
-        "})();",
-        "",
-      ].join("\n")
+    # In Hiptest:
+    # while (foo)
+    #   fighters := 'foo'
+    #   foo('fighters')
+    # end
+    @while_loop_rendered = [
+      "while (foo) {",
+      "  fighters = 'foo';",
+      "  actionwords.foo('fighters');",
+      "}\n"
+    ].join("\n")
 
-      @root_folder_rendered = [
-        "(function () {",
-        "  module('My root folder', {",
-        "    setup: function () {",
-        "      this.actionwords = Object.create(Actionwords);",
-        "    }",
-        "  });",
-        "",
-        "  test('One root scenario', function () {",
-        "",
-        "  });",
-        "",
-        "  test('Another root scenario', function () {",
-        "",
-        "  });",
-        "})();",
-        "",
-      ].join("\n")
+    # In Hiptest: plic = 'ploc' (as in: definition 'foo'(plic = 'ploc'))
+    @plic_param_default_ploc_rendered = "plic = 'ploc'"
 
-      @grand_child_folder_rendered = [
-        "(function () {",
-        "  module('A grand-child folder', {",
-        "    setup: function () {",
-        "      this.actionwords = Object.create(Actionwords);",
-        "    }",
-        "  });",
-        "})();",
-        "",
-      ].join("\n")
+    # In Hiptest:
+    # actionword 'my action word' do
+    # end
+    @empty_action_word_rendered = "myActionWord() {\n\n}"
 
-      @second_grand_child_folder_rendered = [
-        "(function () {",
-        "  module('A second grand-child folder', {",
-        "    setup: function () {",
-        "      this.actionwords = Object.create(Actionwords);",
-        "      this.actionwords.visit('/login');",
-        "      this.actionwords.fill('user@example.com');",
-        "      this.actionwords.fill('notTh4tS3cret');",
-        "    }",
-        "  });",
-        "",
-        "  test('One grand\\'child scenario', function () {",
-        "",
-        "  });",
-        "})();",
-        ""
-      ].join("\n")
-    end
+    # In Hiptest:
+    # @myTag @myTag:somevalue
+    # actionword 'my action word' do
+    # end
+    @tagged_action_word_rendered = [
+      "myActionWord() {",
+      "  // Tags: myTag myTag:somevalue",
+      "}"].join("\n")
 
-    it_behaves_like "a renderer" do
-      let(:language) {'javascript'}
-      let(:framework) {'qUnit'}
-    end
-  end
+    @described_action_word_rendered = [
+      "myActionWord() {",
+      "  // Some description",
+      "}"].join("\n")
 
-  context 'Jasmine' do
-    before(:each) do
-      # In Hiptest:
-      # @myTag
-      # scenario 'compare to pi' (x) do
-      #   foo := 3.14
-      #   if (foo > x)
-      #     step {result: "x is greater than Pi"}
-      #   else
-      #     step {result: "x is lower than Pi
-      #       on two lines"}
-      #   end
-      # end
-      @full_scenario_rendered = [
-        "it('compare to pi', function () {",
-        "  // This is a scenario which description ",
-        "  // is on two lines",
-        "  // Tags: myTag",
-        "  var foo;",
-        "  foo = 3.14;",
-        "  if (foo > x) {",
-        "    // TODO: Implement result: x is greater than Pi",
-        "  } else {",
-        "    // TODO: Implement result: x is lower than Pi",
-        "    // on two lines",
-        "  }",
-        "  throw 'Not implemented';",
-        "});"].join("\n")
+    # In Hiptest: call 'foo'
+    @call_foo_rendered = "actionwords.foo();"
+    # In Hiptest: call 'foo bar'
+    @call_foo_bar_rendered = "actionwords.fooBar();"
 
-      # In hiptest
-      # scenario 'reset password' do
-      #   call given 'Page "url" is opened'(url='/login')
-      #   call when 'I click on "link"'(link='Reset password')
-      #   call then 'page "url" should be opened'(url='/reset-password')
-      # end
-      @bdd_scenario_rendered = [
-        'it(\'Reset password\', function () {',
-        '  // Given Page "/login" is opened',
-        '  this.actionwords.pageUrlIsOpened(\'/login\');',
-        '  // When I click on "Reset password"',
-        '  this.actionwords.iClickOnLink(\'Reset password\');',
-        '  // Then Page "/reset-password" should be opened',
-        '  this.actionwords.pageUrlShouldBeOpened(\'/reset-password\');',
-        '});',
-      ].join("\n")
+    # In Hiptest: call 'foo'('fighters')
+    @call_foo_with_fighters_rendered = "actionwords.foo('fighters');"
+    # In Hiptest: call 'foo bar'('fighters')
+    @call_foo_bar_with_fighters_rendered = "actionwords.fooBar('fighters');"
+    @call_with_special_characters_in_value_rendered = "actionwords.myCallWithWeirdArguments(\"{\\n  this: 'is',\\n  some: ['JSON', 'outputed'],\\n  as: 'a string'\\n}\");"
 
-      # Same than previous scenario, except that is is rendered
-      # so it can be used in a single file (using the --split-scenarios option)
-      @full_scenario_rendered_for_single_file = [
-        "describe('compare to pi', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(Actionwords);",
-        "  });",
-        "",
-        "  it('compare to pi', function () {",
-        "    // This is a scenario which description ",
-        "    // is on two lines",
-        "    // Tags: myTag",
-        "    var foo;",
-        "    foo = 3.14;",
-        "    if (foo > x) {",
-        "      // TODO: Implement result: x is greater than Pi",
-        "    } else {",
-        "      // TODO: Implement result: x is lower than Pi",
-        "      // on two lines",
-        "    }",
-        "    throw 'Not implemented';",
-        "  });",
-        "});",
-        ""
-      ].join("\n")
 
-      @full_scenario_with_uid_rendered = [
-        "it('compare to pi (uid:abcd-1234)', function () {",
-        "  // This is a scenario which description ",
-        "  // is on two lines",
-        "  // Tags: myTag",
-        "  var foo;",
-        "  foo = 3.14;",
-        "  if (foo > x) {",
-        "    // TODO: Implement result: x is greater than Pi",
-        "  } else {",
-        "    // TODO: Implement result: x is lower than Pi",
-        "    // on two lines",
-        "  }",
-        "  throw 'Not implemented';",
-        "});"
-      ].join("\n")
+    # In Hiptest:
+    # actionword 'my action word' (plic, flip = 'flap') do
+    # end
+    @parameterized_action_word_rendered = [
+      "function myActionWord(plic, flip = 'flap') {",
+      "",
+      "}"].join("\n")
 
-      # Scenario definition is:
-      # call 'fill login' (login = login)
-      # call 'fill password' (password = password)
-      # call 'press enter'
-      # call 'assert "error" is displayed' (error = expected)
+    # In Hiptest:
+    # @myTag
+    # actionword 'compare to pi' (x) do
+    #   foo := 3.14
+    #   if (foo > x)
+    #     step {result: "x is greater than Pi"}
+    #   else
+    #     step {result: "x is lower than Pi
+    #       on two lines"}
+    #   end
+    # end
+    @full_actionword_rendered = [
+      "function compareToPi(x) {",
+      "  // Tags: myTag",
+      "  let foo;",
+      "  foo = 3.14;",
+      "  if (foo > x) {",
+      "    // TODO: Implement result: x is greater than Pi",
+      "  } else {",
+      "    // TODO: Implement result: x is lower than Pi",
+      "    // on two lines",
+      "  }",
+      "  throw 'Not implemented';",
+      "}"].join("\n")
 
-      # Scenario datatable is:
-      # Dataset name             | login   | password | expected
-      # -----------------------------------------------------------------------------
-      # Wrong 'login'            | invalid | invalid  | 'Invalid username or password
-      # Wrong "password"         | valid   | invalid  | 'Invalid username or password
-      # Valid 'login'/"password" | valid   | valid    | nil
+    # In Hiptest:
+    # actionword 'my action word' do
+    #   step {action: "basic action"}
+    # end
+    @step_action_word_rendered = [
+      "function myActionWord() {",
+      "  // TODO: Implement action: basic action",
+      "  throw 'Not implemented';",
+      "}"].join("\n")
 
-      @scenario_with_datatable_rendered = [
-        "describe('check login', function () {",
-        "  function checkLogin (login, password, expected) {",
-        "    // Ensure the login process",
-        "    this.actionwords.fillLogin(login);",
-        "    this.actionwords.fillPassword(password);",
-        "    this.actionwords.pressEnter();",
-        "    this.actionwords.assertErrorIsDisplayed(expected);",
-        "  }",
-        "",
-        "  it('Wrong \\'login\\'', function () {",
-        "    checkLogin.apply(this, ['invalid', 'invalid', 'Invalid username or password']);",
-        "  });",
-        "",
-        "  it('Wrong \"password\"', function () {",
-        "    checkLogin.apply(this, ['valid', 'invalid', 'Invalid username or password']);",
-        "  });",
-        "",
-        "  it('Valid \\'login\\'/\"password\"', function () {",
-        "    checkLogin.apply(this, ['valid', 'valid', null]);",
-        "  });",
-        "});",
-        ""
-      ].join("\n")
-
-      @scenario_with_datatable_rendered_with_uids = [
-        "describe('check login', function () {",
-        "  function checkLogin (login, password, expected) {",
-        "    // Ensure the login process",
-        "    this.actionwords.fillLogin(login);",
-        "    this.actionwords.fillPassword(password);",
-        "    this.actionwords.pressEnter();",
-        "    this.actionwords.assertErrorIsDisplayed(expected);",
-        "  }",
-        "",
-        "  it('Wrong \\'login\\' (uid:a-123)', function () {",
-        "    checkLogin.apply(this, ['invalid', 'invalid', 'Invalid username or password']);",
-        "  });",
-        "",
-        "  it('Wrong \"password\" (uid:b-456)', function () {",
-        "    checkLogin.apply(this, ['valid', 'invalid', 'Invalid username or password']);",
-        "  });",
-        "",
-        "  it('Valid \\'login\\'/\"password\" (uid:c-789)', function () {",
-        "    checkLogin.apply(this, ['valid', 'valid', null]);",
-        "  });",
-        "});",
-        ""
-      ].join("\n")
-
-      # Same than "scenario_with_datatable_rendered" but rendered with the option --split-scenarios
-      @scenario_with_datatable_rendered_in_single_file = [
-        "describe('check login', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(Actionwords);",
-        "  });",
-        "",
-        "  describe('check login', function () {",
-        "    function checkLogin (login, password, expected) {",
-        "      // Ensure the login process",
-        "      this.actionwords.fillLogin(login);",
-        "      this.actionwords.fillPassword(password);",
-        "      this.actionwords.pressEnter();",
-        "      this.actionwords.assertErrorIsDisplayed(expected);",
-        "    }",
-        "",
-        "    it('Wrong \\'login\\'', function () {",
-        "      checkLogin.apply(this, ['invalid', 'invalid', 'Invalid username or password']);",
-        "    });",
-        "",
-        "    it('Wrong \"password\"', function () {",
-        "      checkLogin.apply(this, ['valid', 'invalid', 'Invalid username or password']);",
-        "    });",
-        "",
-        "    it('Valid \\'login\\'/\"password\"', function () {",
-        "      checkLogin.apply(this, ['valid', 'valid', null]);",
-        "    });",
-        "  });",
-        "});",
-        ""
-      ].join("\n")
-
-      # In Hiptest, correspond to two scenarios in a project called "Miles' project"
-      # scenario 'first scenario' do
-      # end
-      # scenario 'second scenario' do
-      #   call 'my action word'
-      # end
-      @scenarios_rendered = [
-        "describe('Mike\\'s project', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(Actionwords);",
-        "  });",
-        "",
-        "  it('first scenario', function () {",
-        "",
-        "  });",
-        "",
-        "  it('second scenario', function () {",
-        "    this.actionwords.myActionWord();",
-        "  });",
-        "});",
-        ""
-      ].join("\n")
-
-      @tests_rendered = [
-        "describe('Mike\\'s test project', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(Actionwords);",
-        "  });",
-        "",
-        "  it('Login', function () {",
-        "    // The description is on ",
-        "    // two lines",
-        "    // Tags: myTag myTag:somevalue",
-        "    this.actionwords.visit('/login');",
-        "    this.actionwords.fill('user@example.com');",
-        "    this.actionwords.fill('s3cret');",
-        "    this.actionwords.click('.login-form input[type=submit]');",
-        "    this.actionwords.checkUrl('/welcome');",
-        "  });",
-        "",
-        "  it('Failed login', function () {",
-        "    // Tags: myTag:somevalue",
-        "    this.actionwords.visit('/login');",
-        "    this.actionwords.fill('user@example.com');",
-        "    this.actionwords.fill('notTh4tS3cret');",
-        "    this.actionwords.click('.login-form input[type=submit]');",
-        "    this.actionwords.checkUrl('/login');",
-        "  });",
-        "});",
-        ""
-      ].join("\n")
-
-      @first_test_rendered = [
-        "it('Login', function () {",
-        "  // The description is on ",
-        "  // two lines",
-        "  // Tags: myTag myTag:somevalue",
-        "  this.actionwords.visit('/login');",
-        "  this.actionwords.fill('user@example.com');",
-        "  this.actionwords.fill('s3cret');",
-        "  this.actionwords.click('.login-form input[type=submit]');",
-        "  this.actionwords.checkUrl('/welcome');",
-        "});",
-      ].join("\n")
-
-      @first_test_rendered_for_single_file = [
-        "describe('Login', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(Actionwords);",
-        "  });",
-        "",
-        "  it('Login', function () {",
-        "    // The description is on ",
-        "    // two lines",
-        "    // Tags: myTag myTag:somevalue",
-        "    this.actionwords.visit('/login');",
-        "    this.actionwords.fill('user@example.com');",
-        "    this.actionwords.fill('s3cret');",
-        "    this.actionwords.click('.login-form input[type=submit]');",
-        "    this.actionwords.checkUrl('/welcome');",
-        "  });",
-        "});",
-        ""
-      ].join("\n")
-
-      @grand_child_scenario_rendered_for_single_file = [
-        "describe('One grand\\'child scenario', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(Actionwords);",
-        "  });",
-        "",
-        "  it('One grand\\'child scenario', function () {",
-        "",
-        "  });",
-        "});",
-        "",
-      ].join("\n")
-
-      @root_folder_rendered = [
-        "describe('My root folder', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(Actionwords);",
-        "  });",
-        "",
-        "  it('One root scenario', function () {",
-        "",
-        "  });",
-        "",
-        "  it('Another root scenario', function () {",
-        "",
-        "  });",
-        "});",
-        "",
-      ].join("\n")
-
-      @grand_child_folder_rendered = [
-        "describe('A grand-child folder', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(Actionwords);",
-        "  });",
-        "});",
-        "",
-      ].join("\n")
-
-      @second_grand_child_folder_rendered = [
-        "describe('A second grand-child folder', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(Actionwords);",
-        "    this.actionwords.visit('/login');",
-        "    this.actionwords.fill('user@example.com');",
-        "    this.actionwords.fill('notTh4tS3cret');",
-        "  });",
-        "",
-        "  it('One grand\\'child scenario', function () {",
-        "",
-        "  });",
-        "});",
-        ""
-      ].join("\n")
-    end
-
-    it_behaves_like "a renderer" do
-      let(:language) {'javascript'}
-      let(:framework) {'jasmine'}
-    end
-  end
-
-  context 'Mocha' do
-    before(:each) do
     # In Hiptest, correspond to two action words:
     # actionword 'first action word' do
     # end
@@ -919,14 +605,15 @@ describe 'Render as Javascript' do
     #   call 'first action word'
     # end
     @actionwords_rendered = [
-      "exports.Actionwords = {",
-      "  firstActionWord: function () {",
+      "export function firstActionWord() {",
       "",
-      "  },",
-      "  secondActionWord: function () {",
-      "    this.firstActionWord();",
-      "  }",
-      "};"].join("\n")
+      "}",
+      "",
+      "export function secondActionWord() {",
+      "  firstActionWord();",
+      "}",
+      "",
+    ].join("\n")
 
     # In Hiptest, correspond to these action words with parameters:
     # actionword 'aw with int param'(x) do end
@@ -944,26 +631,29 @@ describe 'Render as Javascript' do
     #   call 'aw with string param'(x = 'toto')
     #   call 'aw with template param'(x = "toto")
     @actionwords_with_params_rendered = [
-      "exports.Actionwords = {",
-      "  awWithIntParam: function (x) {",
+      "export function awWithIntParam(x) {",
       "",
-      "  },",
-      "  awWithFloatParam: function (x) {",
+      "}",
       "",
-      "  },",
-      "  awWithBooleanParam: function (x) {",
+      "export function awWithFloatParam(x) {",
       "",
-      "  },",
-      "  awWithNullParam: function (x) {",
+      "}",
       "",
-      "  },",
-      "  awWithStringParam: function (x) {",
+      "export function awWithBooleanParam(x) {",
       "",
-      "  },",
-      "  awWithTemplateParam: function (x) {",
+      "}",
       "",
-      "  }",
-      "};"
+      "export function awWithNullParam(x) {",
+      "",
+      "}",
+      "",
+      "export function awWithStringParam(x) {",
+      "",
+      "}",
+      "",
+      "export function awWithTemplateParam(x) {",
+      "",
+      "}",
     ].join("\n")
 
       # In Hiptest:
@@ -978,11 +668,11 @@ describe 'Render as Javascript' do
       #   end
       # end
       @full_scenario_rendered = [
-        "it('compare to pi', function () {",
+        "it('compare to pi', () => {",
         "  // This is a scenario which description ",
         "  // is on two lines",
         "  // Tags: myTag",
-        "  var foo;",
+        "  let foo;",
         "  foo = 3.14;",
         "  if (foo > x) {",
         "    // TODO: Implement result: x is greater than Pi",
@@ -991,7 +681,9 @@ describe 'Render as Javascript' do
         "    // on two lines",
         "  }",
         "  throw 'Not implemented';",
-        "});"].join("\n")
+        "});",
+        ""
+      ].join("\n")
 
       # In hiptest
       # scenario 'reset password' do
@@ -1000,29 +692,28 @@ describe 'Render as Javascript' do
       #   call then 'page "url" should be opened'(url='/reset-password')
       # end
       @bdd_scenario_rendered = [
-        'it(\'Reset password\', function () {',
+        'it(\'Reset password\', () => {',
         '  // Given Page "/login" is opened',
-        '  this.actionwords.pageUrlIsOpened(\'/login\');',
+        '  actionwords.pageUrlIsOpened(\'/login\');',
         '  // When I click on "Reset password"',
-        '  this.actionwords.iClickOnLink(\'Reset password\');',
+        '  actionwords.iClickOnLink(\'Reset password\');',
         '  // Then Page "/reset-password" should be opened',
-        '  this.actionwords.pageUrlShouldBeOpened(\'/reset-password\');',
+        '  actionwords.pageUrlShouldBeOpened(\'/reset-password\');',
         '});',
+        "",
       ].join("\n")
 
       # Same than previous scenario, except that is is rendered
       # so it can be used in a single file (using the --split-scenarios option)
       @full_scenario_rendered_for_single_file = [
-        "describe('compare to pi', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(require('./actionwords.js').Actionwords);",
-        "  });",
+        "import * as actionwords from './actionwords.js';",
         "",
-        "  it('compare to pi', function () {",
+        "describe('compare to pi', () => {",
+        "  it('compare to pi', () => {",
         "    // This is a scenario which description ",
         "    // is on two lines",
         "    // Tags: myTag",
-        "    var foo;",
+        "    let foo;",
         "    foo = 3.14;",
         "    if (foo > x) {",
         "      // TODO: Implement result: x is greater than Pi",
@@ -1037,11 +728,11 @@ describe 'Render as Javascript' do
       ].join("\n")
 
       @full_scenario_with_uid_rendered = [
-        "it('compare to pi (uid:abcd-1234)', function () {",
+        "it('compare to pi (uid:abcd-1234)', () => {",
         "  // This is a scenario which description ",
         "  // is on two lines",
         "  // Tags: myTag",
-        "  var foo;",
+        "  let foo;",
         "  foo = 3.14;",
         "  if (foo > x) {",
         "    // TODO: Implement result: x is greater than Pi",
@@ -1050,7 +741,8 @@ describe 'Render as Javascript' do
         "    // on two lines",
         "  }",
         "  throw 'Not implemented';",
-        "});"
+        "});",
+        ""
       ].join("\n")
 
       # Scenario definition is:
@@ -1067,50 +759,50 @@ describe 'Render as Javascript' do
       # Valid 'login'/"password" | valid   | valid    | nil
 
       @scenario_with_datatable_rendered = [
-        "describe('check login', function () {",
+        "describe('check login', () => {",
         "  function checkLogin (login, password, expected) {",
         "    // Ensure the login process",
-        "    this.actionwords.fillLogin(login);",
-        "    this.actionwords.fillPassword(password);",
-        "    this.actionwords.pressEnter();",
-        "    this.actionwords.assertErrorIsDisplayed(expected);",
+        "    actionwords.fillLogin(login);",
+        "    actionwords.fillPassword(password);",
+        "    actionwords.pressEnter();",
+        "    actionwords.assertErrorIsDisplayed(expected);",
         "  }",
         "",
-        "  it('Wrong \\'login\\'', function () {",
-        "    checkLogin.apply(this, ['invalid', 'invalid', 'Invalid username or password']);",
+        "  it('Wrong \\'login\\'', () => {",
+        "    checkLogin('invalid', 'invalid', 'Invalid username or password');",
         "  });",
         "",
-        "  it('Wrong \"password\"', function () {",
-        "    checkLogin.apply(this, ['valid', 'invalid', 'Invalid username or password']);",
+        "  it('Wrong \"password\"', () => {",
+        "    checkLogin('valid', 'invalid', 'Invalid username or password');",
         "  });",
         "",
-        "  it('Valid \\'login\\'/\"password\"', function () {",
-        "    checkLogin.apply(this, ['valid', 'valid', null]);",
+        "  it('Valid \\'login\\'/\"password\"', () => {",
+        "    checkLogin('valid', 'valid', null);",
         "  });",
         "});",
         ""
       ].join("\n")
 
       @scenario_with_datatable_rendered_with_uids = [
-        "describe('check login', function () {",
+        "describe('check login', () => {",
         "  function checkLogin (login, password, expected) {",
         "    // Ensure the login process",
-        "    this.actionwords.fillLogin(login);",
-        "    this.actionwords.fillPassword(password);",
-        "    this.actionwords.pressEnter();",
-        "    this.actionwords.assertErrorIsDisplayed(expected);",
+        "    actionwords.fillLogin(login);",
+        "    actionwords.fillPassword(password);",
+        "    actionwords.pressEnter();",
+        "    actionwords.assertErrorIsDisplayed(expected);",
         "  }",
         "",
-        "  it('Wrong \\'login\\' (uid:a-123)', function () {",
-        "    checkLogin.apply(this, ['invalid', 'invalid', 'Invalid username or password']);",
+        "  it('Wrong \\'login\\' (uid:a-123)', () => {",
+        "    checkLogin('invalid', 'invalid', 'Invalid username or password');",
         "  });",
         "",
-        "  it('Wrong \"password\" (uid:b-456)', function () {",
-        "    checkLogin.apply(this, ['valid', 'invalid', 'Invalid username or password']);",
+        "  it('Wrong \"password\" (uid:b-456)', () => {",
+        "    checkLogin('valid', 'invalid', 'Invalid username or password');",
         "  });",
         "",
-        "  it('Valid \\'login\\'/\"password\" (uid:c-789)', function () {",
-        "    checkLogin.apply(this, ['valid', 'valid', null]);",
+        "  it('Valid \\'login\\'/\"password\" (uid:c-789)', () => {",
+        "    checkLogin('valid', 'valid', null);",
         "  });",
         "});",
         ""
@@ -1118,30 +810,28 @@ describe 'Render as Javascript' do
 
       # Same than "scenario_with_datatable_rendered" but rendered with the option --split-scenarios
       @scenario_with_datatable_rendered_in_single_file = [
-        "describe('check login', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(require('./actionwords.js').Actionwords);",
-        "  });",
+        "import * as actionwords from './actionwords.js';",
         "",
-        "  describe('check login', function () {",
+        "describe('check login', () => {",
+        "  describe('check login', () => {",
         "    function checkLogin (login, password, expected) {",
         "      // Ensure the login process",
-        "      this.actionwords.fillLogin(login);",
-        "      this.actionwords.fillPassword(password);",
-        "      this.actionwords.pressEnter();",
-        "      this.actionwords.assertErrorIsDisplayed(expected);",
+        "      actionwords.fillLogin(login);",
+        "      actionwords.fillPassword(password);",
+        "      actionwords.pressEnter();",
+        "      actionwords.assertErrorIsDisplayed(expected);",
         "    }",
         "",
-        "    it('Wrong \\'login\\'', function () {",
-        "      checkLogin.apply(this, ['invalid', 'invalid', 'Invalid username or password']);",
+        "    it('Wrong \\'login\\'', () => {",
+        "      checkLogin('invalid', 'invalid', 'Invalid username or password');",
         "    });",
         "",
-        "    it('Wrong \"password\"', function () {",
-        "      checkLogin.apply(this, ['valid', 'invalid', 'Invalid username or password']);",
+        "    it('Wrong \"password\"', () => {",
+        "      checkLogin('valid', 'invalid', 'Invalid username or password');",
         "    });",
         "",
-        "    it('Valid \\'login\\'/\"password\"', function () {",
-        "      checkLogin.apply(this, ['valid', 'valid', null]);",
+        "    it('Valid \\'login\\'/\"password\"', () => {",
+        "      checkLogin('valid', 'valid', null);",
         "    });",
         "  });",
         "});",
@@ -1155,91 +845,79 @@ describe 'Render as Javascript' do
       #   call 'my action word'
       # end
       @scenarios_rendered = [
-        "describe('Mike\\'s project', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(require('./actionwords.js').Actionwords);",
-        "  });",
+        "import * as actionwords from './actionwords.js';",
         "",
-        "  it('first scenario', function () {",
+        "describe('Mike\\'s project', () => {",
+        "  it('first scenario', () => {",
         "",
         "  });",
         "",
-        "  it('second scenario', function () {",
-        "    this.actionwords.myActionWord();",
+        "  it('second scenario', () => {",
+        "    actionwords.myActionWord();",
         "  });",
         "});",
         ""
       ].join("\n")
 
       @tests_rendered = [
-        "describe('Mike\\'s test project', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(require('./actionwords.js').Actionwords);",
-        "  });",
+        "import * as actionwords from './actionwords.js';",
         "",
-        "  it('Login', function () {",
+        "describe('Mike\\'s test project', () => {",
+        "  it('Login', () => {",
         "    // The description is on ",
         "    // two lines",
         "    // Tags: myTag myTag:somevalue",
-        "    this.actionwords.visit('/login');",
-        "    this.actionwords.fill('user@example.com');",
-        "    this.actionwords.fill('s3cret');",
-        "    this.actionwords.click('.login-form input[type=submit]');",
-        "    this.actionwords.checkUrl('/welcome');",
+        "    actionwords.visit('/login');",
+        "    actionwords.fill('user@example.com');",
+        "    actionwords.fill('s3cret');",
+        "    actionwords.click('.login-form input[type=submit]');",
+        "    actionwords.checkUrl('/welcome');",
         "  });",
         "",
-        "  it('Failed login', function () {",
+        "  it('Failed login', () => {",
         "    // Tags: myTag:somevalue",
-        "    this.actionwords.visit('/login');",
-        "    this.actionwords.fill('user@example.com');",
-        "    this.actionwords.fill('notTh4tS3cret');",
-        "    this.actionwords.click('.login-form input[type=submit]');",
-        "    this.actionwords.checkUrl('/login');",
+        "    actionwords.visit('/login');",
+        "    actionwords.fill('user@example.com');",
+        "    actionwords.fill('notTh4tS3cret');",
+        "    actionwords.click('.login-form input[type=submit]');",
+        "    actionwords.checkUrl('/login');",
         "  });",
         "});",
         ""
       ].join("\n")
 
       @first_test_rendered = [
-        "it('Login', function () {",
+        "it('Login', () => {",
         "  // The description is on ",
         "  // two lines",
         "  // Tags: myTag myTag:somevalue",
-        "  this.actionwords.visit('/login');",
-        "  this.actionwords.fill('user@example.com');",
-        "  this.actionwords.fill('s3cret');",
-        "  this.actionwords.click('.login-form input[type=submit]');",
-        "  this.actionwords.checkUrl('/welcome');",
+        "  actionwords.visit('/login');",
+        "  actionwords.fill('user@example.com');",
+        "  actionwords.fill('s3cret');",
+        "  actionwords.click('.login-form input[type=submit]');",
+        "  actionwords.checkUrl('/welcome');",
         "});",
       ].join("\n")
 
       @first_test_rendered_for_single_file = [
-        "describe('Login', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(require('./actionwords.js').Actionwords);",
-        "  });",
-        "",
-        "  it('Login', function () {",
-        "    // The description is on ",
-        "    // two lines",
-        "    // Tags: myTag myTag:somevalue",
-        "    this.actionwords.visit('/login');",
-        "    this.actionwords.fill('user@example.com');",
-        "    this.actionwords.fill('s3cret');",
-        "    this.actionwords.click('.login-form input[type=submit]');",
-        "    this.actionwords.checkUrl('/welcome');",
-        "  });",
+        "it('Login', () => {",
+        "  // The description is on ",
+        "  // two lines",
+        "  // Tags: myTag myTag:somevalue",
+        "  actionwords.visit('/login');",
+        "  actionwords.fill('user@example.com');",
+        "  actionwords.fill('s3cret');",
+        "  actionwords.click('.login-form input[type=submit]');",
+        "  actionwords.checkUrl('/welcome');",
         "});",
         ""
       ].join("\n")
 
       @grand_child_scenario_rendered_for_single_file = [
-        "describe('One grand\\'child scenario', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(require('../../actionwords.js').Actionwords);",
-        "  });",
+        "import * as actionwords from '../../actionwords.js';",
         "",
-        "  it('One grand\\'child scenario', function () {",
+        "describe('One grand\\'child scenario', () => {",
+        "  it('One grand\\'child scenario', () => {",
         "",
         "  });",
         "});",
@@ -1247,16 +925,12 @@ describe 'Render as Javascript' do
       ].join("\n")
 
       @root_folder_rendered = [
-        "describe('My root folder', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(require('./actionwords.js').Actionwords);",
-        "  });",
-        "",
-        "  it('One root scenario', function () {",
+        "describe('My root folder', () => {",
+        "  it('One root scenario', () => {",
         "",
         "  });",
         "",
-        "  it('Another root scenario', function () {",
+        "  it('Another root scenario', () => {",
         "",
         "  });",
         "});",
@@ -1264,24 +938,20 @@ describe 'Render as Javascript' do
       ].join("\n")
 
       @grand_child_folder_rendered = [
-        "describe('A grand-child folder', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(require('../actionwords.js').Actionwords);",
-        "  });",
+        "describe('A grand-child folder', () => {",
         "});",
         "",
       ].join("\n")
 
       @second_grand_child_folder_rendered = [
-        "describe('A second grand-child folder', function () {",
-        "  beforeEach(function () {",
-        "    this.actionwords = Object.create(require('../actionwords.js').Actionwords);",
-        "    this.actionwords.visit('/login');",
-        "    this.actionwords.fill('user@example.com');",
-        "    this.actionwords.fill('notTh4tS3cret');",
+        "describe('A second grand-child folder', () => {",
+        "  beforeEach(() => {",
+        "    actionwords.visit('/login');",
+        "    actionwords.fill('user@example.com');",
+        "    actionwords.fill('notTh4tS3cret');",
         "  });",
         "",
-        "  it('One grand\\'child scenario', function () {",
+        "  it('One grand\\'child scenario', () => {",
         "",
         "  });",
         "});",
@@ -1291,7 +961,7 @@ describe 'Render as Javascript' do
 
     it_behaves_like "a renderer" do
       let(:language) {'javascript'}
-      let(:framework) {'mocha'}
+      let(:framework) {'cypress'}
     end
   end
 end
