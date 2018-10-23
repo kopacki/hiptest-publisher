@@ -139,6 +139,28 @@ describe 'Behat rendering' do
     let(:language) {'behat'}
     let(:framework) {''}
 
+    let(:actionwords_rendered) {
+      [
+        '<?php',
+        'require_once(\'ActionwordLibrary.php\');',
+        '',
+        'class Actionwords extends ActionwordLibrary {',
+        '  public function myProjectActionWord() {',
+        '',
+        '  }',
+        '',
+        '  public function myHighLevelProjectActionword() {',
+        '    $this->myProjectActionWord();',
+        '  }',
+        '',
+        '  public function myHighLevelActionword() {',
+        '    $this->getDefaultLibrary()->myFirstActionWord();',
+        '  }',
+        '}',
+        '?>'
+      ].join("\n")
+    }
+
     let(:libraries_rendered) {
       [
         '<?php',
@@ -172,6 +194,10 @@ describe 'Behat rendering' do
         '    }',
         '    return self::$_instance;',
         '  }',
+        '',
+        '  public function myFirstActionWord() {',
+        '    // Tags: priority:high wip',
+        '  }',
         '}',
         '?>'
       ].join("\n")
@@ -190,6 +216,10 @@ describe 'Behat rendering' do
         '      self::$_instance = new WebLibrary();',
         '    }',
         '    return self::$_instance;',
+        '  }',
+        '',
+        '  public function mySecondActionWord() {',
+        '    // Tags: priority:low done',
         '  }',
         '}',
         '?>'

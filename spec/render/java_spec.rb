@@ -630,7 +630,7 @@ describe 'Render as Java' do
         '',
         'public class DefaultLibrary extends ActionwordLibrary {',
         '    public void myFirstActionWord() {',
-        '',
+        '        // Tags: priority:high wip',
         '    }',
         '}'
       ].join("\n")}
@@ -640,7 +640,7 @@ describe 'Render as Java' do
         '',
         'public class WebLibrary extends ActionwordLibrary {',
         '    public void mySecondActionWord() {',
-        '',
+        '        // Tags: priority:low done',
         '    }',
         '}'
       ].join("\n")}
@@ -652,6 +652,14 @@ describe 'Render as Java' do
         '',
         '    public void myProjectActionWord() {',
         '',
+        '    }',
+        '',
+        '    public void myHighLevelProjectActionword() {',
+        '        myProjectActionWord();',
+        '    }',
+        '',
+        '    public void myHighLevelActionword() {',
+        '        getDefaultLibrary().myFirstActionWord();',
         '    }',
         '}'
       ].join("\n")}

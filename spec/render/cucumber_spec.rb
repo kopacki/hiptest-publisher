@@ -399,12 +399,32 @@ describe 'Cucumber/Groovy rendering' do
       ].join("\n")
     }
 
+    let(:actionwords_rendered) {
+        [
+          'package com.example',
+          '',
+          'class Actionwords extends ActionwordLibrary{',
+          '    def myProjectActionWord() {',
+          '    }',
+          '',
+          '    def myHighLevelProjectActionword() {',
+          '        myProjectActionWord()',
+          '    }',
+          '',
+          '    def myHighLevelActionword() {',
+          '        getDefaultLibrary().myFirstActionWord()',
+          '    }',
+          '}'
+        ].join("\n")
+      }
+
     let(:first_lib_rendered) {[
       'package com.example',
       '',
       '@Singleton',
       'class DefaultLibrary {',
       '    def myFirstActionWord() {',
+      '        // Tags: priority:high wip',
       '    }',
       '}'
     ].join("\n")}
@@ -415,6 +435,7 @@ describe 'Cucumber/Groovy rendering' do
       '@Singleton',
       'class WebLibrary {',
       '    def mySecondActionWord() {',
+      '        // Tags: priority:low done',
       '    }',
       '}'
     ].join("\n")}

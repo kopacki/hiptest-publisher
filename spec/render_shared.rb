@@ -616,15 +616,39 @@ shared_examples "a renderer handling libraries" do
   include HelperFactories
 
   let(:first_actionword_uid) {'12345678-1234-1234-1234-123456789012'}
-  let(:first_actionword) {make_actionword('My first action word', uid: first_actionword_uid)}
+  let(:first_tags) { [make_tag('priority', 'high'), make_tag('wip')] }
+  let(:first_actionword) {make_actionword('My first action word', uid: first_actionword_uid, tags: first_tags)}
   let(:first_lib) {make_library('Default', [first_actionword])}
 
   let(:second_actionword_uid) {'87654321-4321-4321-4321-098765432121'}
-  let(:second_actionword) {make_actionword('My second action word', uid: second_actionword_uid)}
+  let(:second_tags) { [make_tag('priority', 'low'), make_tag('done')] }
+  let(:second_actionword) {make_actionword('My second action word', uid: second_actionword_uid, tags: second_tags)}
   let(:second_lib) {make_library('Web', [second_actionword])}
 
   let(:project_actionword_uid) {'ABCDABCD-ABCD-ABCD-ABCD-ABCDABCDABCD'}
-  let(:project_actionword) {make_actionword('My project action word', uid: project_actionword_uid)}
+  let(:high_level_project_actionword_uid) {'AACCABCD-ABAD-ABDD-ACCD-ABCDABCAABCA'}
+  let(:high_level_actionword_uid) {'AACCABCD-AAAD-CDDD-DCCD-ABADABDDABCA'}
+  let(:project_actionword) {
+    make_actionword('My project action word', uid: project_actionword_uid)
+  }
+
+  let(:high_level_project_actionword) {
+    make_actionword(
+      'My high level project actionword',
+      uid: high_level_project_actionword_uid,
+      body: [
+        Hiptest::Nodes::Call.new('My project action word')
+      ])
+  }
+
+  let(:high_level_actionword) {
+    make_actionword(
+      'My high level actionword',
+      uid: high_level_actionword_uid,
+      body: [
+        Hiptest::Nodes::UIDCall.new(first_actionword_uid)
+      ])
+  }
 
   let(:libraries) {Hiptest::Nodes::Libraries.new([first_lib, second_lib])}
 
@@ -632,14 +656,14 @@ shared_examples "a renderer handling libraries" do
     make_scenario('My calling scenario', body: [
       Hiptest::Nodes::UIDCall.new(first_actionword_uid),
       Hiptest::Nodes::UIDCall.new(second_actionword_uid),
-      Hiptest::Nodes::UIDCall.new(project_actionword_uid)
+      Hiptest::Nodes::Call.new(project_actionword_uid)
     ])
   }
 
   let(:project) {
     make_project('My project',
                  scenarios: [scenario],
-                 actionwords: [project_actionword],
+                 actionwords: [project_actionword, high_level_project_actionword, high_level_actionword],
                  libraries: libraries
     ).tap do |p|
       Hiptest::NodeModifiers.add_all(p)
@@ -659,6 +683,14 @@ shared_examples "a renderer handling libraries" do
   let(:scenario_using_default_parameter_rendered) {''}
   let(:library_with_typed_parameters_rendered) {''}
 
+  context '[actionwords] group' do
+    let(:only) {"actionwords"}
+
+    it 'Actionwords' do
+      expect(rendering(project.children[:actionwords])).to eq(actionwords_rendered)
+    end
+  end
+
   context '[library]' do
     let(:only) {'library'}
 
@@ -673,7 +705,6 @@ shared_examples "a renderer handling libraries" do
     it 'generates a file for each libraries with the actionwords definitions inside' do
       expect(rendering(first_lib)).to eq(first_lib_rendered)
       expect(rendering(second_lib)).to eq(second_lib_rendered)
-
     end
   end
 end
